@@ -1,68 +1,150 @@
-
-import * as React from "react";
+import React from 'react';
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+// Utility function to merge class names
+const cn = (...classes: string[]) => {
+  return classes.filter(Boolean).join(' ');
+};
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+const Calendar = () => {
+  const [selectedView, setSelectedView] = React.useState('dates');
+  const [selectedRange, setSelectedRange] = React.useState('exact');
+  
+  const renderCalendarGrid = (month, year) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const days = [];
+    const weeks = [];
+    
+    // Get day names
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    // Current date for highlighting
+    const today = new Date();
+    const currentDate = today.getDate();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+    // Add days from previous month
+    const firstDayOfWeek = firstDay.getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(
+        <div key={`prev-${i}`} className="w-10 h-10 flex items-center justify-center text-neutral-300">
+          {new Date(year, month, -firstDayOfWeek + i + 1).getDate()}
+        </div>
+      );
+    }
+
+    // Add days of current month
+    for (let date = 1; date <= lastDay.getDate(); date++) {
+      const isToday = date === currentDate && month === currentMonth && year === currentYear;
+      days.push(
+        <div
+          key={date}
+          className={cn(
+            "w-10 h-10 flex items-center justify-center rounded-full",
+            isToday ? "bg-neutral-100" : "",
+            "hover:bg-neutral-50 cursor-pointer"
+          )}
+        >
+          {date}
+        </div>
+      );
+    }
+
+    // Split days into weeks
+    while (days.length) {
+      weeks.push(
+        <div key={weeks.length} className="flex justify-between">
+          {days.splice(0, 7)}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          {dayNames.map(day => (
+            <div key={day} className="w-10 text-center text-sm text-neutral-600">
+              {day}
+            </div>
+          ))}
+        </div>
+        {weeks}
+      </div>
+    );
+  };
+
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-8 sm:space-y-0",
-        month: "space-y-6",
-        caption: "flex justify-center pt-1 relative items-center px-8",
-        caption_label: "text-base font-medium",
-        nav: "flex items-center",
-        nav_button: cn(
-          buttonVariants({ variant: "ghost" }),
-          "absolute top-0.5 h-8 w-8 p-0 hover:bg-transparent"
-        ),
-        nav_button_previous: "left-1",
-        nav_button_next: "right-1",
-        table: "w-full border-collapse mt-4",
-        head_row: "flex",
-        head_cell: cn(
-          "text-muted-foreground w-10 font-normal text-[0.8rem] uppercase"
-        ),
-        row: "flex w-full mt-1",
-        cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-          "[&:has([aria-selected])]:bg-transparent"
-        ),
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-10 w-10 p-0 font-normal text-[0.9rem] rounded-full hover:bg-accent/90 focus:bg-accent focus:text-accent-foreground data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent data-[disabled]:cursor-not-allowed"
-        ),
-        day_selected: 
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-full",
-        day_today: "bg-accent/10 text-accent-foreground",
-        day_outside:
-          "text-muted-foreground/50 opacity-50 hover:bg-transparent hover:text-muted-foreground",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "rounded-full",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: () => <ChevronLeft className="h-4 w-4 text-neutral-600" />,
-        IconRight: () => <ChevronRight className="h-4 w-4 text-neutral-600" />,
-      }}
-      {...props}
-    />
-  );
-}
-Calendar.displayName = "Calendar";
+    <div className="w-full max-w-2xl p-4 bg-white rounded-lg shadow-sm">
+      {/* View Toggle */}
+      <div className="flex gap-2 p-1 bg-neutral-100 rounded-lg w-fit mb-6">
+        {['Dates', 'Months', 'Flexible'].map((view) => (
+          <button
+            key={view}
+            className={cn(
+              "px-4 py-1 rounded-md text-sm",
+              selectedView === view.toLowerCase()
+                ? "bg-white shadow-sm"
+                : "text-neutral-600"
+            )}
+            onClick={() => setSelectedView(view.toLowerCase())}
+          >
+            {view}
+          </button>
+        ))}
+      </div>
 
-export { Calendar };
+      {/* Calendar Header */}
+      <div className="flex justify-between items-center mb-6">
+        <button className="p-2">
+          <ChevronLeft className="h-4 w-4 text-neutral-600" />
+        </button>
+        <div className="flex gap-16">
+          <h2 className="text-lg font-medium">February 2025</h2>
+          <h2 className="text-lg font-medium">March 2025</h2>
+        </div>
+        <button className="p-2">
+          <ChevronRight className="h-4 w-4 text-neutral-600" />
+        </button>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="flex gap-16">
+        <div className="flex-1">
+          {renderCalendarGrid(1, 2025)}
+        </div>
+        <div className="flex-1">
+          {renderCalendarGrid(2, 2025)}
+        </div>
+      </div>
+
+      {/* Range Selector */}
+      <div className="flex gap-2 mt-6">
+        {[
+          { label: 'Exact dates', value: 'exact' },
+          { label: '± 1 day', value: '1day' },
+          { label: '± 2 days', value: '2days' },
+          { label: '± 3 days', value: '3days' },
+          { label: '± 7 days', value: '7days' },
+          { label: '± 14 days', value: '14days' },
+        ].map(({ label, value }) => (
+          <button
+            key={value}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm border",
+              selectedRange === value
+                ? "border-neutral-900 bg-neutral-900 text-white"
+                : "border-neutral-200 text-neutral-600"
+            )}
+            onClick={() => setSelectedRange(value)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export {Calendar};
