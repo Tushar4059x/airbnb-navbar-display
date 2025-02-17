@@ -56,8 +56,6 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Dropdown: undefined,
-        DropdownButton: undefined,
         IconLeft: () => <ChevronLeft className="h-4 w-4 text-neutral-600" />,
         IconRight: () => <ChevronRight className="h-4 w-4 text-neutral-600" />,
       }}
